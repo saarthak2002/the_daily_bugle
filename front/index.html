@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <style>
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0, 0.5);
+                background-attachment: rgb(0,0,0,0.4);
+            }
+            .modal-content {
+                background-color: #fefefe;
+                margin: 7% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+            }
+            
+            #closeModal {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            
+            #closeModal:hover {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .modal-content {
+                background-color: #fefefe;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 50%;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+                border-radius: 10px;
+            }
+
+            .modal-content h2 {
+                margin-bottom: 20px;
+            }
+
+            #newStoryForm label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            #loginForm label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            #loginForm input {
+                width: 90%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            #newStoryForm input, #newStoryForm textarea {
+                width: 90%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            #storyBody {
+                height: 100px; 
+                resize: vertical;
+            }
+
+            #newStoryForm button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            }
+
+            #newStoryForm button:hover {
+                background-color: #45a049; 
+            }
+
+            #newStoryForm button:last-child {
+                background-color: #f44336; 
+            }
+
+            #newStoryForm button:last-child:hover {
+                background-color: #e53935;
+            }
+
+            /* Login form buttons */
+            #loginForm button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            }
+
+            #loginForm button:hover {
+                background-color: #45a049; 
+            }
+
+            #loginForm button:last-child {
+                background-color: #f44336; 
+            }
+
+            #loginForm button:last-child:hover {
+                background-color: #e53935;
+            }
+
+            .container {
+                display: grid;
+                grid-template-areas:
+                    "header header header"
+                    "story img img"
+                    "story-list ad categories";
+                grid-template-columns: 2fr 1fr;
+                gap: 10px;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            .main-story {
+                grid-area: story;
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                padding: 10px;
+                border: 1px solid #ccc;
+            }
+
+            .main-story .story {
+                flex: 2;
+                padding-right: 20px;
+            }
+
+            .main-story .story h2 {
+                font-size: 1.5em;
+                margin-bottom: 10px;
+            }
+
+            .main-story .image {
+                flex: 1;
+            }
+
+            .main-story .image img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+            }
+
+            .story-list {
+                grid-area: story-list;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .story-item {
+                padding: 10px;
+                border: 1px solid #ccc;
+            }
+
+            .story-item h3 {
+                font-size: 1.2em;
+                margin-bottom: 5px;
+            }
+
+            .story-item p {
+                font-size: 1em;
+            }
+
+            aside {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                grid-area: ad / ad / categories / categories;
+            }
+
+            .ad, .categories {
+                padding: 10px;
+                border: 1px solid #ccc;
+            }
+
+            .categories ul {
+                list-style: none;
+                padding-left: 0;
+            }
+
+            .categories ul li {
+                margin: 5px 0;
+            }
+
+            header {
+                grid-area: header;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid #ccc;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            header .login {
+                text-decoration: none;
+                font-size: 1em;
+                color: #007BFF;
+            }
+
+        </style>
+
+    </head>
+    <body>
+        <!-- <h1>The Daily Bugle</h1> -->
+        <div id="main">
+
+        </div>
+        <div id="loginModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2 id="loginModalHeading">Login</h2>
+                <div id="loginForm">
+                    <form>
+                        <label for="usernameField">Username</label>
+                        <input id="usernameField" name="username" type="text" placeholder="username" />
+                        <br>
+                        <label for="passwordField">Password</label>
+                        <input id="passwordField" name="password" type="password" placeholder="password" />
+                        <br />
+                        <button onclick="submitLoginForm(event)">Login</button>
+                        <button onclick="closeModal(event)">Close</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="newStoryModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>New Story</h2>
+                <h5>Posting as: <span id="newStoryUserNameDisplay"></span></h5>
+                <form id="newStoryForm">
+                    <label for="storyTitle">Title</label>
+                    <input id="storyTitle" name="title" type="text" placeholder="Story Title" required />
+                    <br>
+                    <label for="storyTeaser">Teaser</label>
+                    <input id="storyTeaser" name="teaser" type="text" placeholder="Story Teaser" required />
+                    <br>
+                    <label for="storyBody">Body</label>
+                    <textarea id="storyBody" name="body" placeholder="Story Body" required></textarea>
+                    <br>
+                    <label for="storyImage">Image URL</label>
+                    <input id="storyImage" name="image" type="text" placeholder="Image URL (optional)" />
+                    <br>
+                    <label for="storyCategories">Categories</label>
+                    <input id="storyCategories" name="categories" type="text" placeholder="Comma-separated categories" required />
+                    <br>
+                    <button onclick="submitNewStory(event)">Post Story</button>
+                    <button onclick="closeStoryModal(event)">Close</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script>
+
+    let isLoggedIn = false;
+    let user = null;
+    const apiActions = {
+        "checkLoginStatus": "http://localhost:8080/thedailybugleapi/user/checkAuthStatus",
+        "login": "http://localhost:8080/thedailybugleapi/user/login",
+        "logout": "http://localhost:8080/thedailybugleapi/user/logout",
+        "postStory": "http://localhost:8080/thedailybugleapi/story",
+        "getFeaturedStories": "http://localhost:8080/thedailybugleapi/story/featured"
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadPageContent();
+    })
+    
+    async function loadPageContent() {
+        await checkLoginStatus();
+        let mainConetentDiv = document.getElementById('main');
+        mainConetentDiv.innerHTML = ''
+        if (isLoggedIn) {
+            //  load logged in view
+            const logoutButton = document.createElement('button');
+            logoutButton.innerText = 'Logout'
+            logoutButton.id = 'logoutButton'
+            mainConetentDiv.appendChild(logoutButton)
+
+            document.getElementById('logoutButton').addEventListener('click', async () => {
+                await logout();
+                loadPageContent();
+            })
+
+            const postANewStoryButton = document.createElement('button');
+            postANewStoryButton.innerText = 'Post New Story'
+            postANewStoryButton.id = 'newStoryButton'
+
+            if (user) {
+                const userDiplay = document.createElement('div');
+                userDiplay.innerHTML = `Logged in as: ${user.username}`;
+                mainConetentDiv.appendChild(userDiplay);
+                mainConetentDiv.appendChild(postANewStoryButton);
+
+                document.getElementById('newStoryButton').addEventListener('click', async () => {
+                    await checkLoginStatus();
+                    if (isLoggedIn) {
+                        if (user.username) {
+                            document.getElementById('newStoryUserNameDisplay').innerText = user.username;
+                        }
+                        document.getElementById('newStoryModal').style.display = 'block';
+                    } else {
+                        alert('Must be logged in to post a new story!')
+                    }
+                })
+            }
+        } else {
+            // load not logged in view
+
+            // const loginButton = document.createElement('button');
+            // loginButton.innerText = 'Login'
+            // loginButton.id = 'loginButton'
+            // mainConetentDiv.appendChild(loginButton)
+
+            // fetch featured stories
+            const featuredStories = await getFeaturedStories();
+            
+            const featuredDiv = document.createElement('div');
+            const mainView = `
+                <div class="container">
+                    <header>
+                        <h1>The Daily Bugle</h1>
+                        <button id="loginButton">Login</button>
+                    </header>
+                    <div class="main-story">
+                        <div class="story">
+                            <h2 id="main-title">${featuredStories[0].title}</h2>
+                            <p id="main-teaser">${featuredStories[0].teaser}</p>
+                            <a href="read.html?id=${featuredStories[0]._id}">Read</a>
+                        </div>
+                        <div class="image">
+                            <img id="main-img" src="${featuredStories[0].image}" alt="Main story image">
+                        </div>
+                    </div>
+                    
+                    <div class="story-list">
+                        <div class="story-item">
+                            <h3 id="title2">${featuredStories[1].title}</h3>
+                            <p id="teaser2">${featuredStories[1].teaser}</p>
+                            <a href="read.html?id=${featuredStories[1]._id}">Read</a>
+                        </div>
+                        <div class="story-item">
+                            <h3 id="title3">${featuredStories[2].title}</h3>
+                            <p id="teaser3">${featuredStories[2].teaser}</p>
+                            <a href="read.html?id=${featuredStories[2]._id}">Read</a>
+                        </div>
+                    </div>
+
+                    <div class="ad">
+                        <img src="https://images.squarespace-cdn.com/content/v1/53c5b010e4b0c3db71b3067c/1500565287386-FFNISGGOX01RAZMZQ7BP/natures-recipe-print-dog-photographer-for-dog-food-dog-eating-from-bowl-beaggle?format=250w" alt="ad image" />
+                        <small>Advertisement</small>
+                    </div>
+                    
+                </div>
+                
+            `;
+            featuredDiv.innerHTML = mainView;
+
+            mainConetentDiv.appendChild(featuredDiv)
+            document.getElementById('loginButton').addEventListener('click', () => {
+                console.log('open modal')
+                document.getElementById('loginModal').style.display = 'block';
+            })
+            console.log(featuredStories)
+        }
+    }
+
+    async function checkLoginStatus() {
+
+        response = await fetch(apiActions['checkLoginStatus'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        responseJson = await response.json();
+        console.log(responseJson);
+        isLoggedIn = responseJson.isLoggedIn ? responseJson.isLoggedIn : false;
+        if(responseJson.user) {
+            user = responseJson.user;
+        }
+    }
+
+    async function login(username, password) {
+        try {
+            response = await fetch(apiActions['login'], {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "username": username,
+                    "password": password
+                })
+            })
+            responseJson = await response.json();
+            if (response.status === 401) {
+                alert(responseJson['message'])
+            }
+            console.log(responseJson);
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function submitLoginForm(e) {
+        e.preventDefault();
+        const username = document.getElementById('usernameField').value;
+        const password = document.getElementById('passwordField').value;
+        if (username && password) {
+            console.log(username, password);
+            await login(username, password);
+            loadPageContent();
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('usernameField').value = '';
+            document.getElementById('passwordField').value = '';
+        } else {
+            alert('Must enter a username and password!');
+        }
+    }
+
+    async function logout() {
+        response = await fetch(apiActions['logout'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        responseJson = await response.json();
+        user = null;
+        console.log(responseJson);
+    }
+
+    function closeModal(e) {
+        e.preventDefault();
+        document.getElementById('loginModal').style.display = 'none';
+    }
+    function closeStoryModal(e) {
+        e.preventDefault();
+        document.getElementById('newStoryModal').style.display = 'none';
+    }
+    
+    async function submitNewStory(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById('storyTitle').value;
+        const teaser = document.getElementById('storyTeaser').value;
+        const body = document.getElementById('storyBody').value;
+        const image = document.getElementById('storyImage').value;
+        const categories = document.getElementById('storyCategories').value;  // Comma-separated string
+        const processedCategories = categories.split(',').map(category => category.trim());
+
+        const storyData = {
+            title,
+            teaser,
+            body,
+            image,
+            "categories": processedCategories
+        };
+
+        console.log(storyData)
+
+        try {
+            const response = await fetch('http://localhost:8080/thedailybugleapi/story', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(storyData)
+            });
+
+            const responseJson = await response.json();
+            if (response.status === 200) {
+                closeStoryModal(event);
+                loadPageContent();
+            } else {
+                alert(responseJson.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred while posting the story.');
+        }
+    }
+
+    async function getFeaturedStories() {
+        try {
+
+            const response = await fetch(apiActions['getFeaturedStories']);
+            const responseJson = response.json();
+            return responseJson;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+</script>

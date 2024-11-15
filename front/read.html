@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f9;
+                margin: 0;
+                padding: 0;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            .story-title {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                color: #333;
+            }
+            .story-teaser {
+                font-size: 1.2em;
+                color: #666;
+                margin-bottom: 20px;
+            }
+            .story-image {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .story-categories {
+                font-size: 0.9em;
+                color: #888;
+                margin-bottom: 15px;
+            }
+            .story-categories span {
+                background-color: #007bff;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 5px;
+                margin-right: 5px;
+            }
+            .story-body {
+                font-size: 1.1em;
+                margin-bottom: 40px;
+                line-height: 1.8;
+            }
+            .ad-container {
+                text-align: center;
+                margin: 20px 0;
+                padding: 15px;
+                border: 2px dashed #ccc;
+                border-radius: 10px;
+                background-color: #fafafa;
+            }
+            .ad-container h3 {
+                margin: 0;
+                color: #333;
+                font-size: 1.5em;
+            }
+            .ad-container p {
+                color: #666;
+                font-size: 1em;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                padding: 20px;
+                background-color: #333;
+                color: white;
+            }
+
+            .edit-button {
+                display: none;
+                padding: 12px 25px;
+                font-size: 1.1em;
+                font-weight: bold;
+                color: #fff;
+                background-color: #28a745;
+                border: none;
+                border-radius: 8px;
+                text-transform: uppercase;
+                cursor: pointer;
+                /* position: absolute; */
+                /* top: 20px; */
+                /* right: 120px; */
+                transition: background-color 0.3s ease;
+                /* margin-top: 15px; */
+            }
+            .edit-button:hover {
+                background-color: #218838;
+            }
+
+            .meta-info-edit-container {
+                display: flex;
+                justify-content: space-between; /* Distributes space between items horizontally */
+                align-items: center;           /* Vertically centers items */
+                height: 100%;                  /* Ensure container takes up full height for vertical centering */
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0, 0.5);
+                background-attachment: rgb(0,0,0,0.4);
+            }
+            .modal-content {
+                background-color: #fefefe;
+                margin: 7% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+            }
+            
+            #closeModal {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            
+            #closeModal:hover {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .modal-content {
+                background-color: #fefefe;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 50%;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+                border-radius: 10px;
+            }
+
+            .modal-content h2 {
+                margin-bottom: 20px;
+            }
+
+            #editStoryForm label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            #editStoryForm input, #editStoryForm textarea {
+                width: 90%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            #storyBody {
+                height: 100px; 
+                resize: vertical;
+            }
+
+            #editStoryForm button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            }
+
+            #editStoryForm button:hover {
+                background-color: #45a049; 
+            }
+
+            #editStoryForm button:last-child {
+                background-color: #f44336; 
+            }
+
+            #editStoryForm button:last-child:hover {
+                background-color: #e53935;
+            }
+        </style>
+
+        <style>
+            .comments-section {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #ccc;
+            }
+
+            .comments-section h3 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+                color: #333;
+            }
+
+            #comments-list {
+                margin-bottom: 20px;
+            }
+
+            .comment {
+                background-color: #f9f9f9;
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 5px;
+            }
+
+            .comment-author {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .comment-body {
+                margin-bottom: 10px;
+            }
+
+            #commentForm {
+                display: flex;
+                flex-direction: column;
+            }
+
+            #commentForm textarea {
+                width: 98%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                resize: vertical;
+            }
+
+            #commentForm button {
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            #commentForm button:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="/thedailybugle">Home</a>
+            <p style="font-weight: 100; text-align: right; margin: 0; font-size: small; color: #888;">Logged in as: <span id="span-logged-in-as">anonymous</span></p>
+            <h1 class="story-title" id="story-title">Story Title</h1>
+            <p class="story-teaser" id="story-teaser">This is a brief teaser or summary of the story to catch the reader's attention.</p>
+            
+            <div class="meta-info-edit-container">
+                <p class="story-teaser">By <span id="author"></span> on <span id="date"></span></p>
+                <button class="edit-button" id="edit-story-button">Edit Story</button>
+            </div>
+            
+            
+            <img src="" alt="Story Image" class="story-image" id="story-image">
+            <div class="story-categories" id="story-categories">
+            </div>
+            <div class="ad-container" id="ad">
+                
+            </div>
+            <div class="story-body" id="story-body">
+                <p>This is the full content of the story. It goes into detail, explaining all the aspects of the story. You can have multiple paragraphs here.</p>
+            </div>
+
+            <div id="comments-section" class="comments-section">
+                <h3>Comments</h3>
+                <div id="comments-list">
+                    <div class="comment">
+                        <p class="comment-author">Anonymous</p>
+                        <p class="comment-body">This is a comment</p>
+                    </div>
+                </div>
+                <form id="commentForm">
+                    <!-- <label for="commentText">Leave a comment</label>
+                    <textarea id="commentText" placeholder="Write your comment here..." required></textarea>
+                    <button onclick="addComment(event)">Submit</button> -->
+                </form>
+            </div>
+            
+        </div>
+        
+        
+
+        <div class="footer">
+            &copy; THE DAILY BUGLE
+        </div>
+
+        <div id="editStoryModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Edit Story</h2>
+                <h5>Editing as: <span id="editStoryUserNameDisplay"></span></h5>
+                <form id="editStoryForm">
+                    <label for="storyTitle">Title</label>
+                    <input id="storyTitle" name="title" type="text" placeholder="Story Title" required />
+                    <br>
+                    <label for="storyTeaser">Teaser</label>
+                    <input id="storyTeaser" name="teaser" type="text" placeholder="Story Teaser" required />
+                    <br>
+                    <label for="storyBody">Body</label>
+                    <textarea id="storyBody" name="body" placeholder="Story Body" required></textarea>
+                    <br>
+                    <label for="storyImage">Image URL</label>
+                    <input id="storyImage" name="image" type="text" placeholder="Image URL (optional)" />
+                    <br>
+                    <label for="storyCategories">Categories</label>
+                    <input id="storyCategories" name="categories" type="text" placeholder="Comma-separated categories" required />
+                    <br>
+                    <button onclick="updateStory(event)">Update Story</button>
+                    <button onclick="closeStoryModal(event)">Close</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+
+    let isLoggedIn = false;
+    let user = null;
+
+    const apiActions = {
+        "checkLoginStatus": "http://localhost:8080/thedailybugleapi/user/checkAuthStatus",
+        "adImpression": "http://localhost:8080/thedailybugleapi/ad/impression",
+        "updateStory": "http://localhost:8080/thedailybugleapi/story",
+        "addComment": "http://localhost:8080/thedailybugleapi/comments"
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadPageContent();
+    })
+
+    async function loadPageContent() {
+        
+        await checkLoginStatus();
+        if(!isLoggedIn) {
+            displayAd();
+        }
+        if(user) {
+            document.getElementById('span-logged-in-as').innerText = user.username;
+            showCommentSection();
+        }
+        
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const storyId = urlParams.get('id');
+        const story =  await fetch(`http://localhost:8080/thedailybugleapi/story/${storyId}`)
+        const storyJson = await story.json();
+        document.getElementById('story-title').innerText = storyJson.title;
+        document.getElementById('story-teaser').innerText = storyJson.teaser;
+        document.getElementById('story-body').innerText = storyJson.body;
+        document.getElementById('story-image').src = storyJson.image;
+        document.getElementById('author').innerText = storyJson.author.username;
+        document.getElementById('date').innerText = storyJson.dateCreated.slice(0,10);
+
+        if(user) {
+            document.getElementById('editStoryUserNameDisplay').innerText = user.username;
+        }
+        
+        document.getElementById('storyTitle').value = storyJson.title;
+        document.getElementById('storyTeaser').value = storyJson.teaser;
+        document.getElementById('storyBody').value = storyJson.body;
+        document.getElementById('storyImage').value = storyJson.image;
+        document.getElementById('storyCategories').value = storyJson.categories.join(', ')
+
+        document.getElementById('story-categories').innerHTML = ''
+        for(let cat in storyJson.categories) {
+            const span = document.createElement('span');
+            span.innerText = storyJson.categories[cat];
+            document.getElementById('story-categories').appendChild(span)
+        }
+
+        document.getElementById('comments-list').innerHTML = ''
+        for(let comment in storyJson.comments) {
+            const div = document.createElement('div')
+            const commentHtml = `
+                <div class="comment">
+                    <p class="comment-author">${storyJson.comments[comment].username}</p>
+                    <p class="comment-body">${storyJson.comments[comment].commentText}</p>
+                </div>
+            `;
+            div.innerHTML = commentHtml;
+            document.getElementById('comments-list').appendChild(div)
+
+        }
+        console.log(storyJson)
+
+        if (user && storyJson) {
+            if(storyJson.author._id === user._id) {
+                document.getElementById('edit-story-button').style.display = 'block';
+                document.getElementById('edit-story-button').addEventListener('click', async () => {
+                    await checkLoginStatus();
+                    if(!isLoggedIn) {
+                        alert('Must login to edit a story');
+                        hideCommentSection();
+                        return
+                    }
+                    if(user) {
+                        document.getElementById('span-logged-in-as').innerText = user.username;
+                        showCommentSection();
+                    }
+                    document.getElementById('editStoryUserNameDisplay').innerText = user.username;
+                    document.getElementById('storyTitle').value = storyJson.title;
+                    document.getElementById('storyTeaser').value = storyJson.teaser;
+                    document.getElementById('storyBody').value = storyJson.body;
+                    document.getElementById('storyImage').value = storyJson.image;
+                    document.getElementById('storyCategories').value = storyJson.categories.join(', ')
+                    document.getElementById('editStoryModal').style.display = 'block';
+                })
+            }
+            else {
+                displayAd();
+            }
+        } else {
+            displayAd();
+        }
+        
+        // document.getElementById('edit-story-button').style.display = 'block';
+        
+        // await fetch('http://localhost:8080/thedailybugleapi/ad/impression');
+    }
+
+    function displayAd() {
+        const adOptions = [
+            {
+                id: 'ad-1-cereal',
+                image: 'https://www.foodnavigator-usa.com/var/wrbm_gb_food_pharma/storage/images/publications/food-beverage-nutrition/foodnavigator-usa.com/article/2020/02/21/kellogg-is-back-in-the-cereal-game-and-is-playing-to-win-with-aggressive-advertising-innovation/10732764-1-eng-GB/Kellogg-is-back-in-the-cereal-game-and-is-playing-to-win-with-aggressive-advertising-innovation.jpg'
+            },
+            {
+                id: 'ad-2-yosemite',
+                image: 'https://i.ytimg.com/vi/C1gLMxJBFXo/maxresdefault.jpg'
+            },
+            {
+                id: 'ad-3-usaa',
+                image: 'https://assets.secure.ownlocal.com/img/uploads/12142735/large_images.webp'
+            }
+        ]
+
+        const randomIndex = Math.floor(Math.random() * adOptions.length);
+        const selectedAd = adOptions[randomIndex];
+        const adHtml = `
+            <h3>Advertisement</h3>
+            <img src="${selectedAd.image}" style="width: 450px;" alt="${selectedAd.id}" />
+        `;
+
+    
+        document.getElementById('ad').innerHTML = adHtml;
+        // Ad displayed - view impression
+
+
+        document.getElementById('ad').addEventListener('click', (e) => {
+            const element = e.target
+            console.log('ad clicked')
+            console.log(element.alt)
+            // Ad click impression
+        })
+    }
+
+    async function checkLoginStatus() {
+        response = await fetch(apiActions['checkLoginStatus'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        responseJson = await response.json();
+        console.log(responseJson);
+        isLoggedIn = responseJson.isLoggedIn ? responseJson.isLoggedIn : false;
+        if(responseJson.user) {
+            user = responseJson.user;
+        }
+    }
+
+    function closeStoryModal(e) {
+        e.preventDefault();
+        document.getElementById('editStoryModal').style.display = 'none';
+    }
+
+    async function updateStory(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById('storyTitle').value;
+        const teaser = document.getElementById('storyTeaser').value;
+        const body = document.getElementById('storyBody').value;
+        const image = document.getElementById('storyImage').value;
+        const categories = document.getElementById('storyCategories').value;  // Comma-separated string
+        const processedCategories = categories.split(',').map(category => category.trim());
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const storyId = urlParams.get('id');
+
+        const storyData = {
+            storyId,
+            title,
+            teaser,
+            body,
+            image,
+            "categories": processedCategories
+        };
+        console.log(storyData)
+
+        const response = await fetch(apiActions['updateStory'], {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(storyData)
+        });
+
+        responseJson = await response.json();
+
+        if (response.status === 200) {
+            closeStoryModal(event);
+            loadPageContent();
+            location.reload();
+        } else {
+            alert(responseJson.message);
+        }
+    }
+
+    async function addComment(event) {
+        event.preventDefault();
+        await checkLoginStatus();
+        if(!isLoggedIn) {
+            alert('Must login to comment');
+            return
+        }
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const storyId = urlParams.get('id');
+
+        const commentText = document.getElementById('commentText').value;
+        if (!commentText) {
+            alert('Please write a comment before submitting.');
+            return;
+        }
+
+        const requestBody = {
+            storyId: storyId,
+            commentText: commentText
+        }
+
+        const response = await fetch(apiActions['addComment'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const resJson = await response.json();
+        console.log(resJson);
+
+        document.getElementById('commentText').value = ''
+        console.log(requestBody);
+        location.reload();
+        // await loadPageContent();
+    }
+
+    function showCommentSection() {
+        const commentHtml = `
+            <label for="commentText">Leave a comment</label>
+            <textarea id="commentText" placeholder="Write your comment here..." required></textarea>
+            <button onclick="addComment(event)">Submit</button>
+        `;
+
+        document.getElementById('commentForm').innerHTML = commentHtml;
+    }
+
+    function hideCommentSection() {
+        document.getElementById('commentForm').innerHTML = '';
+    }
+</script>
