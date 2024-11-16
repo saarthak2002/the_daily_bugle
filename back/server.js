@@ -84,7 +84,6 @@ app.get('/story/featured', async (request, response) => {
 
 app.get('/story/:id', async (request, response) => {
     const storyId = request.params.id;
-    console.log('here 2')
     try {
         await client.connect();
         const story = await client.db('thedailybugle').collection('stories').findOne({ _id: new ObjectId(storyId) });
@@ -93,6 +92,24 @@ app.get('/story/:id', async (request, response) => {
         } else {
             response.status(404).json({ message: 'Story not found' });
         }
+    } catch (error) {
+        console.error(error);
+        response.status(500).json({ message: 'An error occurred while retrieving the story' });
+    } finally {
+        client.close();
+    }
+});
+
+app.get('/story', async (request, response) => {
+    try {
+        let values = []
+        await client.connect();
+        const cursor = await client.db('thedailybugle').collection('stories').find({});
+        while (await cursor.hasNext()) { // wait for Mongo Service to return - returns a Promise Object
+            values.push(await cursor.next());
+        }
+        
+        response.status(200).json(values);
     } catch (error) {
         console.error(error);
         response.status(500).json({ message: 'An error occurred while retrieving the story' });
@@ -213,7 +230,6 @@ app.post('/comments', async (request, response) => {
                     comments: {userId: user._id, username: user.username, dateCreated: new Date(), commentText: commentText}
                 }})
                 response.status(200).json(result);
-                console.log('here')
             }
             else {
                 response.status(404).json({ message: 'Not found' });
@@ -225,21 +241,61 @@ app.post('/comments', async (request, response) => {
         console.error(error);
         response.status(500).json({ message: 'An error occurred' });
     } finally {
-        console.log('here 3')
         client.close();
     }
     
 })
 
-app.get('/ad/impression', async (request, response) => {
+app.get('/story/search/:query', async (request, response) => {
+    const query = request.params.query;
+
+    try {
+        let values = [];
+        await client.connect();
+        const cursor = await client.db('thedailybugle').collection('stories').find({$text: { $search: query}});
+        while (await cursor.hasNext()) { // wait for Mongo Service to return - returns a Promise Object
+            values.push(await cursor.next());
+        }
+        response.status(200).json(values);
+    } catch (error) {
+        console.error(error);
+        response.status(500).json({ message: 'An error occurred' });
+    } finally {
+        client.close();
+    }
+})
+
+app.post('/ad/impression', async (request, response) => {
+    const { userId } = request.cookies;
+    const { actionType, pageId, adId } = request.body;
     const userAgent = request.headers['user-agent'];
-    const ipAddress = request.ip || request.headers['x-forwarded-for'] || request.connection.remoteAddress;
-    console.log(userAgent)
-    console.log(ipAddress)
-    console.log(request.ip)
-    console.log(request.headers['x-forwarded-for'])
-    response.status(200).json({
-        userAgent: userAgent,
-        ipAddress: ipAddress
-    });
+    const ipAddress = request.ip || request.headers['x-forwarded-for'];
+    
+    const adImprrssion = {
+        actionType,
+        userId: userId || 'anonymous',
+        pageId,
+        adId,
+        userAgent,
+        ipAddress,
+        dateCreated: new Date()
+    }
+
+    console.log(adImprrssion)
+
+    try {
+        await client.connect();
+        const result = await client.db('thedailybugle').collection('adImpressions').insertOne(adImprrssion);
+        response.status(200).json({
+            res: result,
+            message: 'ad impression created'
+        });
+    } catch (error) {
+        console.error(error);
+        response.status(500).json({ message: 'An error occurred' });
+    } finally {
+        client.close();
+    }
+
+    
 })

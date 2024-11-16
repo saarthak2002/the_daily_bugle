@@ -340,7 +340,8 @@
         "checkLoginStatus": "http://localhost:8080/thedailybugleapi/user/checkAuthStatus",
         "adImpression": "http://localhost:8080/thedailybugleapi/ad/impression",
         "updateStory": "http://localhost:8080/thedailybugleapi/story",
-        "addComment": "http://localhost:8080/thedailybugleapi/comments"
+        "addComment": "http://localhost:8080/thedailybugleapi/comments",
+        "adImpression": "http://localhost:8080/thedailybugleapi/ad/impression"
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -463,13 +464,17 @@
     
         document.getElementById('ad').innerHTML = adHtml;
         // Ad displayed - view impression
-
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const storyId = urlParams.get('id');
+        generateAdImpression('view', storyId, selectedAd.id);
 
         document.getElementById('ad').addEventListener('click', (e) => {
             const element = e.target
             console.log('ad clicked')
             console.log(element.alt)
             // Ad click impression
+            generateAdImpression('click', storyId, selectedAd.id);
         })
     }
 
@@ -589,5 +594,21 @@
 
     function hideCommentSection() {
         document.getElementById('commentForm').innerHTML = '';
+    }
+
+    async function generateAdImpression(actionType, pageId, adId) {
+        const requestBody = {
+            actionType,
+            pageId,
+            adId
+        }
+        const response = await fetch(apiActions['adImpression'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        console.log(await response.json())
     }
 </script>

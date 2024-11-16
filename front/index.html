@@ -235,6 +235,69 @@
                 color: #007BFF;
             }
 
+            .search-container {
+                display: flex;
+                align-items: center;
+                border: 1px solid #ccc;
+                padding: 5px;
+                border-radius: 25px;
+                background-color: #fff;
+            }
+
+            .search-bar {
+                padding: 10px;
+                border: none;
+                border-radius: 25px;
+                font-size: 16px;
+                outline: none;
+                width: 200px;
+                margin-right: 10px;
+                box-sizing: border-box;
+            }
+
+            .search-results {
+                padding: 20px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                max-width: 800px;
+                margin: 20px auto;
+            }
+
+            #resultsList {
+                list-style-type: none;
+                padding: 0;
+            }
+
+            #resultsList li {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                margin-bottom: 10px;
+                background-color: #fff;
+                border-radius: 6px;
+                transition: background-color 0.3s ease;
+            }
+
+            #resultsList li:hover {
+                background-color: #f1f1f1;
+            }
+
+            #resultsList li a {
+                text-decoration: none;
+                font-weight: bold;
+                color: #333;
+                font-size: 16px;
+                display: block;
+            }
+
+            #resultsList li a:hover {
+                color: #007BFF;
+            }
+
+            #searchResults {
+                display: none;
+            }
+
         </style>
 
     </head>
@@ -297,7 +360,10 @@
         "login": "http://localhost:8080/thedailybugleapi/user/login",
         "logout": "http://localhost:8080/thedailybugleapi/user/logout",
         "postStory": "http://localhost:8080/thedailybugleapi/story",
-        "getFeaturedStories": "http://localhost:8080/thedailybugleapi/story/featured"
+        "getFeaturedStories": "http://localhost:8080/thedailybugleapi/story/featured",
+        "getStories": "http://localhost:8080/thedailybugleapi/story",
+        "adImpression": "http://localhost:8080/thedailybugleapi/ad/impression",
+        "search": "http://localhost:8080/thedailybugleapi/story/search/"
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -310,25 +376,58 @@
         mainConetentDiv.innerHTML = ''
         if (isLoggedIn) {
             //  load logged in view
-            const logoutButton = document.createElement('button');
-            logoutButton.innerText = 'Logout'
-            logoutButton.id = 'logoutButton'
-            mainConetentDiv.appendChild(logoutButton)
+
+            const mainView = `
+                <div class="container">
+                    <header>
+                        <h1>The Daily Bugle</h1>
+                        <div><p>Logged in as: ${user.username}</p></div>
+                        <div>
+                            <button id="newStoryButton">Post New Story</button>
+                            <button id="logoutButton">Logout</button>
+                        </div>
+                    </header>
+                    <div id="story-diplay-list" class="story-list">
+                        
+                    </div>
+                    <div>
+                        <h2>Your Feed</h2>
+                    </div>
+                    <div style="display:flex; align-items: center; flex-direction: column;">
+                        <h2>Search Stories</h2 style="text-align: center;">
+                        <div class="search-container">
+                            <input type="text" id="search-field-main" class="search-bar" placeholder="Search...">
+                            <button class="search-button" onclick="search(event)">Search</button>
+                        </div>
+                    </div>
+                    <aside class="search-results" id="searchResults">
+                        <ul id="resultsList"></ul>
+                    </aside>
+                </div>
+            `;
+            
+            const div = document.createElement('div');
+            div.innerHTML = mainView;
+            // const logoutButton = document.createElement('button');
+            // logoutButton.innerText = 'Logout'
+            // logoutButton.id = 'logoutButton'
+            mainConetentDiv.appendChild(div);
 
             document.getElementById('logoutButton').addEventListener('click', async () => {
                 await logout();
                 loadPageContent();
             })
 
-            const postANewStoryButton = document.createElement('button');
-            postANewStoryButton.innerText = 'Post New Story'
-            postANewStoryButton.id = 'newStoryButton'
+            // const postANewStoryButton = document.createElement('button');
+            // postANewStoryButton.innerText = 'Post New Story'
+            // postANewStoryButton.id = 'newStoryButton'
 
             if (user) {
                 const userDiplay = document.createElement('div');
                 userDiplay.innerHTML = `Logged in as: ${user.username}`;
-                mainConetentDiv.appendChild(userDiplay);
-                mainConetentDiv.appendChild(postANewStoryButton);
+                
+                // mainConetentDiv.appendChild(userDiplay);
+                // mainConetentDiv.appendChild(postANewStoryButton);
 
                 document.getElementById('newStoryButton').addEventListener('click', async () => {
                     await checkLoginStatus();
@@ -341,6 +440,22 @@
                         alert('Must be logged in to post a new story!')
                     }
                 })
+
+                const allStories =  await getAllStories();
+                console.log(allStories);
+                
+                document.getElementById('story-diplay-list').innerHTML = '';
+                for (let i in allStories) {
+                    const storyItem = document.createElement('div');
+                    storyItem.classList.add('story-item')
+                    const storyEle = `
+                        <h3 id="title2">${allStories[i].title}</h3>
+                        <p id="teaser2">${allStories[i].teaser}</p>
+                        <a href="read.html?id=${allStories[i]._id}">Read</a>
+                    `
+                    storyItem.innerHTML = storyEle;
+                    document.getElementById('story-diplay-list').appendChild(storyItem);
+                }
             }
         } else {
             // load not logged in view
@@ -384,9 +499,9 @@
                         </div>
                     </div>
 
-                    <div class="ad">
+                    <div id="ad" class="ad" style="display:flex; align-items: center; flex-direction: column;">
                         <img src="https://images.squarespace-cdn.com/content/v1/53c5b010e4b0c3db71b3067c/1500565287386-FFNISGGOX01RAZMZQ7BP/natures-recipe-print-dog-photographer-for-dog-food-dog-eating-from-bowl-beaggle?format=250w" alt="ad image" />
-                        <small>Advertisement</small>
+                        <h4>Advertisement</h4>
                     </div>
                     
                 </div>
@@ -400,6 +515,7 @@
                 document.getElementById('loginModal').style.display = 'block';
             })
             console.log(featuredStories)
+            displayAd();
         }
     }
 
@@ -532,6 +648,101 @@
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async function getAllStories() {
+        let stories = []
+        try {
+            const response = await fetch(apiActions['getStories']);
+            const responseJson = await response.json();
+            stories = responseJson;
+        } catch (error) {
+            console.error(error);
+        } finally {
+            return stories;
+        }
+    }
+
+    function displayAd() {
+        const adOptions = [
+            {
+                id: 'ad-4-dog-food',
+                image: 'https://images.squarespace-cdn.com/content/v1/53c5b010e4b0c3db71b3067c/1500565287386-FFNISGGOX01RAZMZQ7BP/natures-recipe-print-dog-photographer-for-dog-food-dog-eating-from-bowl-beaggle?format=250w'
+            },
+            {
+                id: 'ad-5-lego',
+                image: 'https://i.pinimg.com/736x/e8/b4/31/e8b43146d0515515482748094d3d842c.jpg'
+            },
+            {
+                id: 'ad-3-usaa',
+                image: 'https://assets.secure.ownlocal.com/img/uploads/12142735/large_images.webp'
+            },
+            {
+                id: 'ad-6-heinz',
+                image: 'https://cdn-chefn.nitrocdn.com/IcbkoxBoZAaIwhSaprplormwGmobedsR/assets/images/optimized/rev-e99406d/antavo.com/wp-content/uploads/2022/08/heinz-best-ads.png'
+            }
+        ]
+
+        const randomIndex = Math.floor(Math.random() * adOptions.length);
+        const selectedAd = adOptions[randomIndex];
+        const adHtml = `
+            <img src="${selectedAd.image}" style="width: 250px;" alt="${selectedAd.id}" />
+            <h4>Sponsored Ad</h4>
+        `;
+
+    
+        document.getElementById('ad').innerHTML = adHtml;
+        // Ad displayed - view impression
+        generateAdImpression('view', 'landing_page', selectedAd.id);
+
+
+        document.getElementById('ad').addEventListener('click', (e) => {
+            const element = e.target
+            console.log('ad clicked')
+            console.log(element.alt)
+            // Ad click impression
+            generateAdImpression('click', 'landing_page', selectedAd.id);
+        })
+    }
+
+    async function generateAdImpression(actionType, pageId, adId) {
+        const requestBody = {
+            actionType,
+            pageId,
+            adId
+        }
+        const response = await fetch(apiActions['adImpression'], {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        console.log(await response.json())
+    }
+
+    async function search(event) {
+        event.preventDefault();
+        const query = document.getElementById('search-field-main').value;
+        if(!query) {
+            return;
+        }
+        const encodedQuery = encodeURIComponent(query);
+        const req_url = apiActions['search'] + encodedQuery;
+        const response = await fetch(req_url);
+        const resJson = await response.json();
+        console.log(resJson);
+        document.getElementById('searchResults').style.display = 'block';
+        document.getElementById('resultsList').innerHTML = ''
+        for (let i in resJson) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="read.html?id=${resJson[i]._id}">${resJson[i].title}</a>`;
+            document.getElementById('resultsList').appendChild(li)
+        }
+        if (resJson.length === 0) {
+            document.getElementById('resultsList').innerHTML = `We could not find any stories that match: ${query}`
+        }
+        document.getElementById('search-field-main').value = "";
     }
 
 </script>
