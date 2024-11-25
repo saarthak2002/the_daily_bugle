@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: task-all-pod
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: task-pv-claim
+  containers:
+    - name: task-http-container
+      image: tdb_httpd_img:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
+          name: "httpservice"
+    - name: task-app-container
+      image: tdb_node_server_img:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 3010
+          name: "nodeservice"
+    - name: task-pv-container
+      image: mongodb/mongodb-community-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 27017
+          name: "mongoservice"
+      volumeMounts:
+        - mountPath: "/data/db"
+          name: task-pv-storage
+      securityContext:
+        runAsUser: 0
